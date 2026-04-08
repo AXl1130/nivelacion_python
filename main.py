@@ -1,104 +1,126 @@
 from abc import ABC, abstractmethod
 
-class VehiculoBase(ABC):
-    def __init__(self, marca: str, modelo: str):
-        self.marca = marca
-        self.modelo = modelo
+class OrganismoBase(ABC):
+
+    def __init__(self, nombre_cientifico, reino):
+        self.nombre_cientifico = nombre_cientifico
+        self.reino = reino
 
     @abstractmethod
-    def encender(self):
-        """Método abstracto para encender el vehículo"""
+    def realizar_metabolismo(self):
         pass
 
     @abstractmethod
     def __str__(self):
-        """Método abstracto para representar el objeto como texto"""
         pass
 
-class SistemaMotor:
-    def __init__(self, tipo_combustible: str, capacidad_tanque: float):
-        self.tipo_combustible = tipo_combustible
-        self.capacidad_tanque = capacidad_tanque
-        self.nivel_combustible = 0.0
 
-    def repostar(self, litros: float):
-        self.nivel_combustible += litros
-        if self.nivel_combustible > self.capacidad_tanque:
-            self.nivel_combustible = self.capacidad_tanque
-        print(f"Repostaje completado. Nivel actual: {self.nivel_combustible}L de {self.tipo_combustible}")
+class SistemaReproductor:
 
-class SistemaRastreo:
+    def __init__(self, tipo_reproduccion, tasa_reproduccion):
+        self.tipo_reproduccion = tipo_reproduccion
+        self.tasa_reproduccion = tasa_reproduccion
+        self.ciclos_realizados = 0
+
+    def reproducirse(self):
+        self.ciclos_realizados += 1
+        print(f"La celula se reprodujo! ya van {self.ciclos_realizados} veces")
+        print(f"Tipo de reproduccion: {self.tipo_reproduccion}, velocidad: {self.tasa_reproduccion} por hora")
+
+
+class SistemaDefensa:
+
     def __init__(self):
-        self.gps_activado = False
+        self.barrera_activa = False
+        self.nivel_anticuerpos = 0.0
 
-    def encender_gps(self):
-        self.gps_activado = True
-        print("El sistema de rastreo satelital (GPS) ha sido activado.")
+    def activar_defensa(self):
+        self.barrera_activa = True
+        print("Se activo la defensa! el sistema inmune esta listo")
 
-class VehiculoInteligente(VehiculoBase, SistemaMotor, SistemaRastreo):
-    def __init__(self, marca: str, modelo: str, tipo_combustible: str, capacidad_tanque: float, kilometraje_inicial: float = 0.0):
-        VehiculoBase.__init__(self, marca, modelo)
-        SistemaMotor.__init__(self, tipo_combustible, capacidad_tanque)
-        SistemaRastreo.__init__(self)
-        
-        self._kilometraje = kilometraje_inicial
+    def producir_anticuerpos(self, cantidad):
+        self.nivel_anticuerpos += cantidad
+        print(f"Se produjeron {cantidad} anticuerpos, ahora hay {self.nivel_anticuerpos} en total")
+
+
+class Celula(OrganismoBase, SistemaReproductor, SistemaDefensa):
+
+    def __init__(self, nombre_cientifico, reino, tipo_reproduccion, tasa_reproduccion, energia_inicial=0.0):
+        OrganismoBase.__init__(self, nombre_cientifico, reino)
+        SistemaReproductor.__init__(self, tipo_reproduccion, tasa_reproduccion)
+        SistemaDefensa.__init__(self)
+
+        self._energia = energia_inicial
 
     @property
-    def kilometraje(self) -> float:
-        return self._kilometraje
-
-    @kilometraje.setter
-    def kilometraje(self, nuevo_kilometraje: float):
-        if not isinstance(nuevo_kilometraje, (int, float)):
-            print(f"Error: El kilometraje debe ser un número (valor intentado: {nuevo_kilometraje}).")
+    def energia(self):
+        return self._energia
+    @energia.setter
+    def energia(self, nuevo_valor):
+        if not isinstance(nuevo_valor, (int, float)):
+            print(f"Error: eso no es un numero, intenta de nuevo (pusiste: {nuevo_valor})")
             return
-        
-        if nuevo_kilometraje < self._kilometraje:
-            print(f"Error: Movimiento inválido. El kilometraje nuevo ({nuevo_kilometraje}) no puede ser menor al actual ({self._kilometraje}).")
+        if nuevo_valor < 0:
+            print(f"Error: la energia no puede ser negativa, una celula no funciona asi (pusiste: {nuevo_valor})")
             return
-            
-        self._kilometraje = nuevo_kilometraje
-        print(f"El kilometraje mediante 'setter' se ha actualizado a: {self._kilometraje} km")
-
-    def encender(self):
-        print(f"El vehículo {self.marca} {self.modelo} se está encendiendo y verificando todos los sistemas...")
-
+        if nuevo_valor > 10000:
+            print(f"Error: ese valor es demasiado alto para una celula, el maximo es 10000 (pusiste: {nuevo_valor})")
+            return
+        self._energia = nuevo_valor
+        print(f"Listo! la energia quedo en {self._energia} ATP")
+    def realizar_metabolismo(self):
+        costo = 50.0
+        if self._energia >= costo:
+            self._energia -= costo
+            print(f"{self.nombre_cientifico} hizo metabolismo y gasto {costo} ATP, le quedan {self._energia}")
+        else:
+            print(f"{self.nombre_cientifico} no tiene suficiente energia para metabolizar, solo tiene {self._energia} ATP")
     def __str__(self):
-        estado_gps = "Activado" if self.gps_activado else "Desactivado"
-        return f"[Vehículo Inteligente] {self.marca} {self.modelo} | {self.tipo_combustible} | GPS: {estado_gps} | Kilometraje: {self.kilometraje} km"
+        if self.barrera_activa:
+            defensa = "si"
+        else:
+            defensa = "no"
+
+        return (f"Celula: {self.nombre_cientifico} | Reino: {self.reino} | "
+                f"Energia: {self._energia} ATP | Reproduccion: {self.tipo_reproduccion} | "
+                f"Defensa activa: {defensa}")
 
 
 if __name__ == "__main__":
-    print("-" * 50)
-    print("INSTANCIACIÓN DE 3 OBJETOS (POLIMORFISMO Y PRUEBAS)")
-    print("-" * 50)
+    print("-" * 55)
+    print("creando 3 celulas distintas para probar el codigo")
+    print("-" * 55)
 
-    coche1 = VehiculoInteligente("Toyota", "Corolla", "Gasolina", 45.0, 15000)
-    coche2 = VehiculoInteligente("Tesla", "Model S", "Eléctrico", 100.0, 5000)
-    coche3 = VehiculoInteligente("Ford", "Ranger", "Diesel", 65.0, 120000)
+    celula1 = Celula("Escherichia coli",    "Bacteria", "Biparticion",    2.0,  500.0)
+    celula2 = Celula("Paramecium caudatum", "Protista", "Fision binaria", 1.0,  300.0)
+    celula3 = Celula("Saccharomyces sp.",   "Fungi",    "Gemacion",       0.5, 1200.0)
 
-    lista_vehiculos = [coche1, coche2, coche3]
+    lista_celulas = [celula1, celula2, celula3]
 
-    print("\n--- Demostrando Polimorfismo y herencia ---")
-    for vehiculo in lista_vehiculos:
-        vehiculo.encender()
-        print(vehiculo)
+    print("\n--- probando polimorfismo con las 3 celulas ---")
+    for celula in lista_celulas:
+        celula.realizar_metabolismo()
+        print(celula)
         print()
 
-    print("--- Pruebas de otras clases padre (Herencia Múltiple) ---")
-    coche1.repostar(20)
-    coche2.encender_gps()
+    print("--- probando herencia multiple ---")
+    celula1.reproducirse()
+    celula2.activar_defensa()
+    celula3.producir_anticuerpos(75.0)
+    print("\n--- probando el encapsulamiento (getter y setter) ---")
 
-    print("\n--- Prueba de Encapsulamiento con Setter/Getter y Validaciones ---")
-    
-    print(f"Kilometraje actual del coche 3: {coche3.kilometraje} km")
-    
-    print("\nPrueba 1: Aumentamos el kilometraje de 120,000 a 120,500...")
-    coche3.kilometraje = 120500 
-    print("\nPrueba 2: Intentamos 'fraude' bajando el kilometraje a 50,000...")
-    coche3.kilometraje = 50000
+    print(f"\nenergia actual de celula3: {celula3.energia} ATP")
 
-    print("\nPrueba 3: Asignar un valor no numérico...")
-    coche3.kilometraje = "cien mil"
+    print("\nPrueba 1: subimos la energia a 1500...")
+    celula3.energia = 1500
 
-    print(f"\nResultado final de los atributos encapsulados: {coche3}")
+    print("\nPrueba 2: intentamos poner energia negativa, deberia dar error...")
+    celula3.energia = -200
+
+    print("\nPrueba 3: intentamos poner 20000, que esta fuera del rango...")
+    celula3.energia = 20000
+
+    print("\nPrueba 4: intentamos poner un texto en vez de numero...")
+    celula3.energia = "mucha"
+
+    print(f"\ncomo quedo la celula3 al final: {celula3}")
